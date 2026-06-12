@@ -2,6 +2,7 @@ import { Usuarios } from '../../domain/repositories/IUsuarioRepository';
 import { pool } from './database/mysql.connection';
 import { Usuario } from '../../domain/entities/usuario';
 export class UsuarioMySQL extends Usuarios{
+    
     async buscarPorEmail(email: string): Promise<Usuario | null> {
         const [rows]: any = await pool.execute(
             'SELECT * FROM usuarios WHERE email = ?',
@@ -19,6 +20,7 @@ export class UsuarioMySQL extends Usuarios{
 
         return usuario;
     }
+
     async buscarPorId(id: number): Promise<Usuario | null> {
         const [rows]: any = await pool.execute(
             'SELECT * FROM usuarios WHERE id_usuario = ?',

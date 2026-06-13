@@ -1,8 +1,24 @@
 import express from 'express';
 import {RegisterUseCase} from '../domain/use-cases/register';
 import {UsuarioMySQL} from '../infrastructure/repositories/MysqlUsuarioRepository';
+// IMPORTS NECESARIOS PARA EL LOGIN
+import{LoginUseCase} from '../domain/use-cases/login'
+import {TokenManager} from '../infrastructure/repositories/SesionMemoria'
+import {LoginHistoryManager} from '../infrastructure/repositories/IntentosFallidosManager'
+
+
 const router = express.Router();
 
+router.post('/login', async (req, res) => {
+    const {email,contrasenia} = req.body;
+    try {
+        const llave = await new LoginUseCase(new UsuarioMySQL(), new TokenManager(), new LoginHistoryManager()).ejecutar(email,contrasenia);
+        res.json({token: llave});
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+
+} )
 router.post('/register', async (req, res) => {
     const {nombre, idRol, email, contrasenia} = req.body;
 

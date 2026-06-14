@@ -27,4 +27,24 @@ router.post('/cancelar', async (req, res) => {
     }
 });
 
+router.get('/fecha', async (req, res) => {
+    const { fecha } = req.body;
+    try {
+        const reservas = await new MysqlReservaRepository().buscarPorFecha(new Date(fecha));
+        res.json(reservas);
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+router.get('/usuario/:idUsuario', async (req, res) => {
+    const idUsuario = parseInt(req.params.idUsuario);
+    try {
+        const reservas = await new MysqlReservaRepository().buscarPorIdUsuario(idUsuario);
+        res.json(reservas);
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
 export default router;

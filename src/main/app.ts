@@ -1,10 +1,12 @@
 import express from "express";
-import router from "../routes/auth.routes";
+import authRouter from "../routes/auth.routes";
+import reservaRouter from "../routes/reserva.routes";
 
 const app = express();
 
 app.use(express.json());
-app.use('/auth', router);
+app.use('/auth', authRouter);
+app.use('/reserva', reservaRouter);
 
 const PORT = 3000;
 app.listen(PORT, () => {

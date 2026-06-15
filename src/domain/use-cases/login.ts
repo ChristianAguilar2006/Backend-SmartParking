@@ -9,7 +9,7 @@ export class LoginUseCase {
         private historialLogins: LoginHistory
     ) {}
 
-    async ejecutar(email: string, contrasenia: string): Promise<string | null> {
+    async ejecutar(email: string, contrasenia: string): Promise<{ token: string, rol: any, nombre: string } | null> {
         const usuario = await this.usuarioRepository.buscarPorEmail(email);
 
         if (usuario == null) {
@@ -21,7 +21,7 @@ export class LoginUseCase {
 
             const token = crypto.randomUUID();
             this.tokenmanager.guardar(token, usuario);
-            return token;
+            return { token, rol: (usuario as any).idRol, nombre: (usuario as any).nombre };
         }
 
         this.historialLogins.guardarIntento(email, new Date());

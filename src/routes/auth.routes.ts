@@ -12,13 +12,16 @@ const router = express.Router();
 router.post('/login', async (req, res) => {
     const {email,contrasenia} = req.body;
     try {
-        const llave = await new LoginUseCase(new UsuarioMySQL(), new TokenManager(), new LoginHistoryManager()).ejecutar(email,contrasenia);
-        res.json({token: llave});
+        const resultado = await new LoginUseCase(new UsuarioMySQL(), new TokenManager(), new LoginHistoryManager()).ejecutar(email,contrasenia);
+        if (resultado) {
+            res.json(resultado);
+        } else {
+            res.status(401).json({ error: "Credenciales inválidas" });
+        }
     } catch (error: any) {
         res.status(400).json({ error: error.message });
     }
-
-} )
+});
 router.post('/register', async (req, res) => {
     const {nombre, idRol, email, contrasenia} = req.body;
 

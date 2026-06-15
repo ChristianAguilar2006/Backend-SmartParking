@@ -7,6 +7,7 @@ import { Matriz2D } from './Matriz2D';
 export class MysqlParqueaderoRepository extends IParqueaderoRepository {
     private heap = new MinHeap();
     private matriz = new Matriz2D(10, 10);
+    private hashMap = new Map<number, Parqueadero>(); // ← nuevo
 
     async guardar(parqueadero: Parqueadero): Promise<void> {
         await pool.execute(
@@ -16,12 +17,14 @@ export class MysqlParqueaderoRepository extends IParqueaderoRepository {
         if (parqueadero.estado === 'libre') {
             this.heap.insertar(parqueadero);
         }
+        this.hashMap.set(parqueadero.idParqueadero!, parqueadero); // ← nuevo
         const fila = Math.floor((parqueadero.idParqueadero! - 1) / 10);
         const columna = (parqueadero.idParqueadero! - 1) % 10;
         this.matriz.actualizar(fila, columna, parqueadero.estado);
     }
 
     async buscarPorId(id: number): Promise<Parqueadero | null> {
+        if (this.hashMap.has(id)) return this.hashMap.get(id)!; // ← O(1) desde memoria
         const [rows]: any = await pool.execute(
             'SELECT * FROM parqueaderos WHERE id_parqueadero = ?',
             [id]
@@ -30,6 +33,7 @@ export class MysqlParqueaderoRepository extends IParqueaderoRepository {
         const fila = rows[0];
         const parqueadero = new Parqueadero(fila.codigo, fila.zona, fila.tipo, fila.estado);
         parqueadero.idParqueadero = fila.id_parqueadero;
+        this.hashMap.set(id, parqueadero); // ← guarda en cache
         return parqueadero;
     }
 
@@ -38,13 +42,13 @@ export class MysqlParqueaderoRepository extends IParqueaderoRepository {
             'SELECT * FROM parqueaderos WHERE estado = ? AND activo = TRUE',
             ['libre']
         );
-        const libres = rows.map((fila: any) => {
+        return rows.map((fila: any) => {
             const parqueadero = new Parqueadero(fila.codigo, fila.zona, fila.tipo, fila.estado);
             parqueadero.idParqueadero = fila.id_parqueadero;
             this.heap.insertar(parqueadero);
+            this.hashMap.set(parqueadero.idParqueadero!, parqueadero);
             return parqueadero;
         });
-        return libres;
     }
 
     async cambiarEstado(id: number, estado: 'libre' | 'ocupado' | 'reservado' | 'mantenimiento' | 'bloqueado'): Promise<void> {
@@ -54,6 +58,11 @@ export class MysqlParqueaderoRepository extends IParqueaderoRepository {
         );
         if (estado === 'ocupado') {
             this.heap.extraerMin();
+        }
+        const parqueadero = this.hashMap.get(id);
+        if (parqueadero) {
+            parqueadero.estado = estado;
+            this.hashMap.set(id, parqueadero);
         }
         const fila = Math.floor((id - 1) / 10);
         const columna = (id - 1) % 10;

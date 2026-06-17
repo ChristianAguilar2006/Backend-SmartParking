@@ -2,21 +2,23 @@ import express from 'express';
 import { CrearReservaUseCase } from '../domain/use-cases/crearReserva';
 import { CancelarReservaUseCase } from '../domain/use-cases/cancelarReserva';
 import { MysqlReservaRepository } from '../infrastructure/repositories/MysqlReservaRepository';
-
+import { MysqlPagoRepository } from '../infrastructure/repositories/MysqlPagoRepository';
+import { MysqlParqueaderoRepository } from '../infrastructure/repositories/MysqlParqueaderoRepository';
 const router = express.Router();
 
 router.post('/crear', async (req, res) => {
-    const { idParqueadero, idUsuario, fecha, horaInicio, horaFin } = req.body;
+    const { idUsuario, fecha, horaInicio, horaFin, tipo } = req.body;
     try {
-        await new CrearReservaUseCase(new MysqlReservaRepository()).ejecutar(
-            idParqueadero, idUsuario, new Date(fecha), horaInicio, horaFin
-        );
-        res.json({ mensaje: "Reserva creada correctamente" });
+        const reserva = await new CrearReservaUseCase(
+            new MysqlReservaRepository(),
+            new MysqlPagoRepository(),
+            new MysqlParqueaderoRepository()
+        ).ejecutar(idUsuario, new Date(fecha), horaInicio, horaFin, tipo);
+        res.json({ mensaje: "Reserva creada correctamente", reserva });
     } catch (error: any) {
         res.status(400).json({ error: error.message });
     }
 });
-
 router.post('/cancelar', async (req, res) => {
     const { idReserva } = req.body;
     try {

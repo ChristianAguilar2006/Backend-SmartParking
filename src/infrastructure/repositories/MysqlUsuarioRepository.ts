@@ -15,6 +15,7 @@ export class UsuarioMySQL extends Usuarios{
 
         const fila = rows[0];
         const usuario = new Usuario(fila.id_rol, fila.email, fila.nombre);
+        usuario.idUsuario = fila.id_usuario;
         usuario.passwordHash = fila.password_hash;
         usuario.activo = fila.activo;
 
@@ -33,6 +34,7 @@ export class UsuarioMySQL extends Usuarios{
 
         const fila = rows[0];
         const usuario = new Usuario(fila.id_rol, fila.email, fila.nombre);
+        usuario.idUsuario = fila.id_usuario;
         usuario.passwordHash = fila.password_hash;
         usuario.activo = fila.activo;
 

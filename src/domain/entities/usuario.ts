@@ -1,4 +1,5 @@
 export class Usuario {
+    idUsuario?: number;
     idRol: number;
     email: string;
     passwordHash!: string;

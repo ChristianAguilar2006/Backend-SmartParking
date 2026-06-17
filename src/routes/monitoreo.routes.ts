@@ -5,7 +5,7 @@ import {RegistrarSalidaUseCase } from '../domain/use-cases/registrarSalida';
 
 import { MysqlLogRepository } from '../infrastructure/repositories/MysqlLogRepository';
 import { MysqlParqueaderoRepository } from '../infrastructure/repositories/MysqlParqueaderoRepository';
-
+import { MysqlPagoRepository } from '../infrastructure/repositories/MysqlPagoRepository';
 const router = express.Router();
 
 router.post('/entrada', async (req, res) => {
@@ -22,13 +22,14 @@ router.post('/entrada', async (req, res) => {
 });
 
 router.post('/salida', async (req, res) => {
-    const { idParqueadero } = req.body;
+    const { idParqueadero, idUsuario } = req.body;
     try {
-        await new RegistrarSalidaUseCase(
+        const resultado = await new RegistrarSalidaUseCase(
             new MysqlLogRepository(),
-            new MysqlParqueaderoRepository()
-        ).ejecutar(idParqueadero);
-        res.json({ mensaje: "Salida registrada correctamente" });
+            new MysqlParqueaderoRepository(),
+            new MysqlPagoRepository()
+        ).ejecutar(idParqueadero, idUsuario);
+        res.json({ mensaje: "Salida registrada correctamente", monto: resultado.monto });
     } catch (error: any) {
         res.status(400).json({ error: error.message });
     }

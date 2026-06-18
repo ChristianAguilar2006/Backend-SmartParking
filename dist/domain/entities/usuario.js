@@ -2,9 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Usuario = void 0;
 class Usuario {
-    constructor(idRol, idUsuario, email, nombre) {
+    constructor(idRol, email, nombre) {
         this.activo = false;
-        this.idUsuario = idUsuario;
         this.idRol = idRol;
         this.email = email;
         this.nombre = nombre;

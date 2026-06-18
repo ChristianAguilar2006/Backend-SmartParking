@@ -73,6 +73,26 @@ export class MysqlParqueaderoRepository extends IParqueaderoRepository {
         return this.matriz.obtenerTodo();
     }
 
+    async cargarMatrizDesdeBD(): Promise<string[][]> {
+        const [rows]: any = await pool.execute(
+            'SELECT id_parqueadero, estado FROM parqueaderos WHERE activo = TRUE'
+        );
+
+        if (rows.length === 0) {
+            return [];
+        }
+
+        this.matriz = new Matriz2D(10, 10);
+        for (const fila of rows) {
+            const id = fila.id_parqueadero;
+            const filaIdx = Math.floor((id - 1) / 10);
+            const colIdx = (id - 1) % 10;
+            this.matriz.actualizar(filaIdx, colIdx, fila.estado);
+        }
+
+        return this.matriz.obtenerTodo();
+    }
+
     actualizarMatriz(fila: number, columna: number, estado: string): void {
         this.matriz.actualizar(fila, columna, estado);
     }

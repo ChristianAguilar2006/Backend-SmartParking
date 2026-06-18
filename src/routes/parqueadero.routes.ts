@@ -37,7 +37,8 @@ router.get('/libres', async (req, res) => {
 router.get('/matriz', async (req, res) => {
     try {
         const repo = new MysqlParqueaderoRepository();
-        res.json(repo.obtenerMatriz());
+        const matriz = await repo.cargarMatrizDesdeBD();
+        res.json(matriz);
     } catch (error: any) {
         res.status(400).json({ error: error.message });
     }

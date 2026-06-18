@@ -4,6 +4,7 @@ import reservaRouter from "../routes/reserva.routes";
 import parqueaderoRouter from '../routes/parqueadero.routes';
 import monitoreoRouter from '../routes/monitoreo.routes';
 import estadisticasRouter from '../routes/estadisticas.routes';
+import pagosRouter from '../routes/pagos.routes';
 import cors from 'cors';
 const app = express();
 app.use(cors());
@@ -14,6 +15,7 @@ app.use('/auth', authRouter);
 app.use('/reserva', reservaRouter);
 app.use('/parqueadero', parqueaderoRouter);
 app.use('/monitoreo', monitoreoRouter);
+app.use('/pago', pagosRouter);
 
 const PORT = 3000;
 app.listen(PORT, () => {

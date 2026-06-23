@@ -36,6 +36,7 @@ class MysqlParqueaderoRepository extends IParqueaderoRepository_1.IParqueaderoRe
         return parqueadero;
     }
     async buscarLibres() {
+        this.heap = new MinHeap_1.MinHeap();
         const [rows] = await mysql_connection_1.pool.execute('SELECT * FROM parqueaderos WHERE estado = ? AND activo = TRUE', ['libre']);
         return rows.map((fila) => {
             const parqueadero = new parqueadero_1.Parqueadero(fila.codigo, fila.zona, fila.tipo, fila.estado);
@@ -44,6 +45,20 @@ class MysqlParqueaderoRepository extends IParqueaderoRepository_1.IParqueaderoRe
             this.hashMap.set(parqueadero.idParqueadero, parqueadero);
             return parqueadero;
         });
+    }
+    async obtenerEspacioOptimo(tipo) {
+        const libres = await this.buscarLibres();
+        const delTipo = libres.filter((p) => p.tipo === tipo);
+        if (delTipo.length === 0) {
+            throw new Error('No hay espacios disponibles para ese tipo de vehículo');
+        }
+        this.heap = new MinHeap_1.MinHeap();
+        delTipo.forEach((p) => this.heap.insertar(p));
+        const optimo = this.heap.extraerMin();
+        if (!optimo) {
+            throw new Error('No hay espacios disponibles para ese tipo de vehículo');
+        }
+        return optimo;
     }
     async cambiarEstado(id, estado) {
         await mysql_connection_1.pool.execute('UPDATE parqueaderos SET estado = ? WHERE id_parqueadero = ?', [estado, id]);

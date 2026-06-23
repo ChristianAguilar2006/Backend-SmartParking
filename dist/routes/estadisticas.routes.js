@@ -4,11 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const MysqlEstadisticasRepository_1 = require("../infrastructure/repositories/MysqlEstadisticasRepository");
+const instances_1 = require("../infrastructure/repositories/instances");
 const router = express_1.default.Router();
 router.get('/ocupacion-promedio', async (req, res) => {
     try {
-        const promedio = await new MysqlEstadisticasRepository_1.MysqlEstadisticasRepository().ocupacionPromedio();
+        const promedio = await instances_1.estadisticasRepo.ocupacionPromedio();
         res.json({ ocupacionPromedio: promedio });
     }
     catch (error) {
@@ -17,7 +17,7 @@ router.get('/ocupacion-promedio', async (req, res) => {
 });
 router.get('/horas-pico', async (req, res) => {
     try {
-        const horas = await new MysqlEstadisticasRepository_1.MysqlEstadisticasRepository().horasPico();
+        const horas = await instances_1.estadisticasRepo.horasPico();
         res.json(horas);
     }
     catch (error) {
@@ -26,7 +26,7 @@ router.get('/horas-pico', async (req, res) => {
 });
 router.get('/tiempo-promedio', async (req, res) => {
     try {
-        const tiempo = await new MysqlEstadisticasRepository_1.MysqlEstadisticasRepository().tiempoPromedioEstadia();
+        const tiempo = await instances_1.estadisticasRepo.tiempoPromedioEstadia();
         res.json({ tiempoPromedio: tiempo });
     }
     catch (error) {
@@ -35,7 +35,7 @@ router.get('/tiempo-promedio', async (req, res) => {
 });
 router.get('/parqueaderos-mas-reservados', async (req, res) => {
     try {
-        const parqueaderos = await new MysqlEstadisticasRepository_1.MysqlEstadisticasRepository().parqueaderosMasReservados();
+        const parqueaderos = await instances_1.estadisticasRepo.parqueaderosMasReservados();
         res.json(parqueaderos);
     }
     catch (error) {
@@ -45,7 +45,7 @@ router.get('/parqueaderos-mas-reservados', async (req, res) => {
 router.get('/reservas-usuario/:idUsuario', async (req, res) => {
     const idUsuario = parseInt(req.params.idUsuario);
     try {
-        const cantidad = await new MysqlEstadisticasRepository_1.MysqlEstadisticasRepository().reservasPorUsuario(idUsuario);
+        const cantidad = await instances_1.estadisticasRepo.reservasPorUsuario(idUsuario);
         res.json({ reservas: cantidad });
     }
     catch (error) {
@@ -54,7 +54,7 @@ router.get('/reservas-usuario/:idUsuario', async (req, res) => {
 });
 router.get('/ingresos-totales', async (req, res) => {
     try {
-        const total = await new MysqlEstadisticasRepository_1.MysqlEstadisticasRepository().ingresosTotales();
+        const total = await instances_1.estadisticasRepo.ingresosTotales();
         res.json({ ingresosTotales: total });
     }
     catch (error) {
@@ -63,7 +63,7 @@ router.get('/ingresos-totales', async (req, res) => {
 });
 router.get('/metodo-pago', async (req, res) => {
     try {
-        const metodo = await new MysqlEstadisticasRepository_1.MysqlEstadisticasRepository().metodoPagoMasUsado();
+        const metodo = await instances_1.estadisticasRepo.metodoPagoMasUsado();
         res.json({ metodoPagoMasUsado: metodo });
     }
     catch (error) {
@@ -73,7 +73,7 @@ router.get('/metodo-pago', async (req, res) => {
 router.get('/rango', async (req, res) => {
     const { inicio, fin } = req.query;
     try {
-        const logs = await new MysqlEstadisticasRepository_1.MysqlEstadisticasRepository().buscarPorRango(new Date(inicio), new Date(fin));
+        const logs = await instances_1.estadisticasRepo.buscarPorRango(new Date(inicio), new Date(fin));
         res.json(logs);
     }
     catch (error) {
@@ -82,7 +82,7 @@ router.get('/rango', async (req, res) => {
 });
 router.get('/series-tiempo', async (req, res) => {
     try {
-        const series = new MysqlEstadisticasRepository_1.MysqlEstadisticasRepository().obtenerSeriesTiempo();
+        const series = instances_1.estadisticasRepo.obtenerSeriesTiempo();
         res.json(series);
     }
     catch (error) {

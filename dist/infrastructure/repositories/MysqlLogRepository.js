@@ -46,5 +46,8 @@ class MysqlLogRepository extends ILogRepository_1.ILogRepository {
         }
         return duracionMinutos;
     }
+    obtenerColaEventos() {
+        return [...this.colaFIFO];
+    }
 }
 exports.MysqlLogRepository = MysqlLogRepository;

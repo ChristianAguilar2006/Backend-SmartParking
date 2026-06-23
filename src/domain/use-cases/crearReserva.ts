@@ -1,8 +1,12 @@
+import { IParqueaderoRepository } from '../repositories/IParqueaderoRepository';
 import { IReservaRepository } from '../repositories/IReservaRepository';
 import { IPagoRepository } from '../repositories/IPagoRepository';
-import { IParqueaderoRepository } from '../repositories/IParqueaderoRepository';
 import { Reserva } from '../entities/reserva';
 import { Pago } from '../entities/pago';
+
+function haySuperposicion(inicioA: string, finA: string, inicioB: string, finB: string): boolean {
+    return inicioA < finB && inicioB < finA;
+}
 
 export class CrearReservaUseCase {
     constructor(
@@ -18,14 +22,19 @@ export class CrearReservaUseCase {
         horaFin: string,
         tipo: 'auto' | 'moto' | 'bicicleta' | 'discapacidad'
     ): Promise<Reserva> {
-        const libres = await this.parqueaderoRepository.buscarLibres();
-        const delTipo = libres.filter(p => p.tipo === tipo);
+        const optimo = await this.parqueaderoRepository.obtenerEspacioOptimo(tipo);
 
-        if (delTipo.length === 0) {
-            throw new Error("No hay espacios disponibles para ese tipo de vehículo");
+        const reservasDelDia = await this.reservaRepository.buscarPorFecha(fecha);
+        const conflicto = reservasDelDia.some(
+            (r) =>
+                r.idParqueadero === optimo.idParqueadero &&
+                r.estado !== 'cancelada' &&
+                haySuperposicion(horaInicio, horaFin, r.horaInicio, r.horaFin)
+        );
+
+        if (conflicto) {
+            throw new Error('Conflicto de horario en el espacio seleccionado');
         }
-
-        const optimo = delTipo[0];
 
         const reserva = new Reserva(optimo.idParqueadero!, idUsuario, fecha, horaInicio, horaFin);
         reserva.validarHoras();
@@ -39,6 +48,7 @@ export class CrearReservaUseCase {
         await this.reservaRepository.guardar(reserva);
         await this.parqueaderoRepository.cambiarEstado(optimo.idParqueadero!, 'reservado');
         const pago = new Pago(idUsuario, optimo.idParqueadero!, monto, 'tarjeta');
+        pago.idReserva = reserva.idReserva;
         await this.pagoRepository.guardar(pago);
         return reserva;
     }

@@ -62,4 +62,8 @@ export class MysqlLogRepository extends ILogRepository {
 
         return duracionMinutos;
     }
+
+    obtenerColaEventos(): Log[] {
+        return [...this.colaFIFO];
+    }
 }

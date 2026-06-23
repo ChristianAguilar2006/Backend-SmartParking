@@ -38,6 +38,7 @@ export class MysqlParqueaderoRepository extends IParqueaderoRepository {
     }
 
     async buscarLibres(): Promise<Parqueadero[]> {
+        this.heap = new MinHeap();
         const [rows]: any = await pool.execute(
             'SELECT * FROM parqueaderos WHERE estado = ? AND activo = TRUE',
             ['libre']
@@ -49,6 +50,25 @@ export class MysqlParqueaderoRepository extends IParqueaderoRepository {
             this.hashMap.set(parqueadero.idParqueadero!, parqueadero);
             return parqueadero;
         });
+    }
+
+    async obtenerEspacioOptimo(tipo: 'auto' | 'moto' | 'bicicleta' | 'discapacidad'): Promise<Parqueadero> {
+        const libres = await this.buscarLibres();
+        const delTipo = libres.filter((p) => p.tipo === tipo);
+
+        if (delTipo.length === 0) {
+            throw new Error('No hay espacios disponibles para ese tipo de vehículo');
+        }
+
+        this.heap = new MinHeap();
+        delTipo.forEach((p) => this.heap.insertar(p));
+        const optimo = this.heap.extraerMin();
+
+        if (!optimo) {
+            throw new Error('No hay espacios disponibles para ese tipo de vehículo');
+        }
+
+        return optimo;
     }
 
     async cambiarEstado(id: number, estado: 'libre' | 'ocupado' | 'reservado' | 'mantenimiento' | 'bloqueado'): Promise<void> {

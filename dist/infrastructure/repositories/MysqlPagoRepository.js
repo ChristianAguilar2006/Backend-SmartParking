@@ -11,20 +11,31 @@ class MysqlPagoRepository extends IPagoRepository_1.IPagoRepository {
         this.hashMap = new Map();
         this.logsPagos = [];
     }
+    mapearFila(fila) {
+        const pago = new pago_1.Pago(fila.id_usuario, fila.id_parqueadero, fila.monto, fila.metodo);
+        pago.idPago = fila.id_pago;
+        pago.idReserva = fila.id_reserva;
+        pago.estado = fila.estado;
+        return pago;
+    }
+    indexarPago(pago) {
+        if (pago.idPago)
+            this.hashMap.set(pago.idPago, pago);
+        if (pago.estado === 'pendiente')
+            this.colaFIFO.push(pago);
+        this.logsPagos.push(pago);
+    }
     async guardar(pago) {
         const [result] = await mysql_connection_1.pool.execute('INSERT INTO pagos (id_usuario, id_reserva, id_parqueadero, monto, metodo, estado) VALUES (?, ?, ?, ?, ?, ?)', [pago.idUsuario, pago.idReserva ?? null, pago.idParqueadero, pago.monto, pago.metodo, pago.estado]);
         pago.idPago = result.insertId;
-        this.colaFIFO.push(pago);
-        this.hashMap.set(pago.idPago, pago);
-        this.logsPagos.push(pago);
+        this.indexarPago(pago);
     }
     async buscarPorUsuario(idUsuario) {
         const [rows] = await mysql_connection_1.pool.execute('SELECT * FROM pagos WHERE id_usuario = ?', [idUsuario]);
         return rows.map((fila) => {
-            const pago = new pago_1.Pago(fila.id_usuario, fila.id_parqueadero, fila.monto, fila.metodo);
-            pago.idPago = fila.id_pago;
-            pago.idReserva = fila.id_reserva;
-            pago.estado = fila.estado;
+            const pago = this.mapearFila(fila);
+            if (pago.idPago)
+                this.hashMap.set(pago.idPago, pago);
             return pago;
         });
     }
@@ -48,6 +59,21 @@ class MysqlPagoRepository extends IPagoRepository_1.IPagoRepository {
     }
     obtenerLogs() {
         return this.logsPagos;
+    }
+    obtenerColaPendiente() {
+        return [...this.colaFIFO];
+    }
+    async cargarColaDesdeBD() {
+        if (this.colaFIFO.length > 0)
+            return this.obtenerColaPendiente();
+        const [rows] = await mysql_connection_1.pool.execute("SELECT * FROM pagos WHERE estado = 'pendiente' ORDER BY id_pago ASC");
+        rows.forEach((fila) => {
+            const pago = this.mapearFila(fila);
+            if (pago.idPago)
+                this.hashMap.set(pago.idPago, pago);
+            this.colaFIFO.push(pago);
+        });
+        return this.obtenerColaPendiente();
     }
 }
 exports.MysqlPagoRepository = MysqlPagoRepository;

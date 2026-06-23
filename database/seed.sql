@@ -2,7 +2,10 @@ USE smartparking;
 
 -- Usuario de prueba (omitir si ya existe)
 INSERT IGNORE INTO usuarios (nombre, email, password_hash, id_rol, activo)
-VALUES ('Christian', 'christian@universidad.edu', 'Abc123!', 2, TRUE);
+VALUES
+  ('Christian', 'christian@universidad.edu', 'Abc123!', 2, TRUE),
+  ('Admin SmartPark', 'admin@universidad.edu', 'Admin123!', 1, TRUE),
+  ('Guardia SmartPark', 'guardia@universidad.edu', 'Guard123!', 3, TRUE);
 
 -- Limpiar parqueaderos previos (opcional, solo si quieres empezar de cero)
 -- DELETE FROM pagos;
